@@ -1,8 +1,8 @@
 
-# Códigos de la clase Modelación de sistemas multiagentes con gráficas computacionales (Gpo 301)
+# Códigos de la clase: 
+## Modelación de sistemas multiagentes con gráficas computacionales (Gpo 301)
 
 En el repositorio podrán encontrar todos los códigos que generamos para la clase.
-
 
 
 ## Tabla de contenido
