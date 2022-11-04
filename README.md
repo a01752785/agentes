@@ -7,7 +7,8 @@ En el repositorio podrán encontrar todos los códigos que generamos para la cla
 
 ## Tabla de contenido
 
-- [M1. Actividad](/Aspiradora.py).
+- [M1. Main code](/Aspiradora.py).
+- [M1. Visualizador](/Aspiradora_vis.py).
 
 ## Autores
 
