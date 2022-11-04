@@ -4,16 +4,26 @@
 
 import mesa
 
-# def compute_gini(model):
-#     agent_wealths = [agent.wealth for agent in model.schedule.agents]
-#     x = sorted(agent_wealths)
-#     N = model.num_agents
-#     B = sum(xi * (N - i) for i, xi in enumerate(x)) / (N * sum(x))
-#     return 1 + (1 / N) - 2 * B
+def compute_clean_cells(model):
+    # print(model.height)
+    cells = model.height * model.width
+    dirty_cells = 0
+    for agent in model.schedule.agents:
+        if isinstance(agent, DirtynessAgent):
+            if not agent.is_clean():
+                dirty_cells += 1
+    clean_ratio = (cells - dirty_cells) / cells * 100
+    # print(clean_ratio)
+    return clean_ratio
+    # agent_wealths = [agent.wealth ]
+    # x = sorted(agent_wealths)
+    # N = model.num_agents
+    # B = sum(xi * (N - i) for i, xi in enumerate(x)) / (N * sum(x))
+    # return 1 + (1 / N) - 2 * B
 
 class DirtynessAgent(mesa.Agent):
-    def __init__(self, model):
-        super().__init__(model)
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
         self.dirty = True
     
     def step(self):
@@ -23,7 +33,7 @@ class DirtynessAgent(mesa.Agent):
         self.dirty = False
 
     def is_clean(self):
-        return self.dirty
+        return not self.dirty
 
 
 class AspiradoraAgent(mesa.Agent):
@@ -32,15 +42,16 @@ class AspiradoraAgent(mesa.Agent):
 
     def step(self):
         cellmates = self.model.grid.get_cell_list_contents([self.pos])
-        moved = False
+        turn = False
         for cellmate in cellmates:
             if isinstance(cellmate, DirtynessAgent):
                 if not cellmate.is_clean():
                     cellmate.clean()
+                    turn = True
                 else:
                     self.move()
-                    moved = True
-        if not moved:
+                    turn = True
+        if not turn:
             self.move()
 
     def move(self):
@@ -55,26 +66,34 @@ class AspiradoraAgent(mesa.Agent):
 class AspiradoraModel(mesa.Model):
     def __init__(self, width, height, num_agents, dirty_percentage):
         self.num_agents = num_agents
+        self.width = width
+        self.height = height
         self.dirty_percentage = dirty_percentage
-        self.grid = mesa.space.MultiGrid(width, height, True)
+        self.grid = mesa.space.MultiGrid(width, height, False)
         self.schedule = mesa.time.RandomActivation(self)
         self.running = True
-        for i in range(int(self.dirty_percentage * width * height)):
-            agent = DirtynessAgent(self)
+        num_dirty_cells = int(self.dirty_percentage * width * height)
+        used_coordinates = set()
+        for i in range(num_dirty_cells):
+            agent = DirtynessAgent(i, self)
             self.schedule.add(agent)
             x = self.random.randrange(self.grid.width)
             y = self.random.randrange(self.grid.height)
+            while (x, y) in used_coordinates:
+                x = self.random.randrange(self.grid.width)
+                y = self.random.randrange(self.grid.height)
             self.grid.place_agent(agent, (x, y))
+            used_coordinates.add((x, y))
 
 
         for i in range(self.num_agents):
-            agent = AspiradoraAgent(i, self)
+            agent = AspiradoraAgent(i + num_dirty_cells, self)
             self.schedule.add(agent)
             self.grid.place_agent(agent, (1, 1))
         
-        # self.datacollector = mesa.DataCollector(
-        #     model_reporters={"Gini": compute_gini}, agent_reporters={"Wealth": "wealth"}
-        # )
+        self.datacollector = mesa.DataCollector(
+            model_reporters={"CleanCells": compute_clean_cells}
+        )
     
     def step(self):
         self.datacollector.collect(self)
@@ -84,12 +103,14 @@ class AspiradoraModel(mesa.Model):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     # Run the model
-    model = AspiradoraModel(10, 10, 50, 0.5)
-    for i in range(100):
+    model = AspiradoraModel(10, 10, 1, 0.2)
+    for i in range(50):
         model.step()
 
-    # agent_wealth = model.datacollector.get_agent_vars_dataframe()
-    # agent_wealth.head()
+    clean_cells = model.datacollector.get_model_vars_dataframe()
+    clean_cells.head()
+    clean_cells.plot()
+    plt.show()
     
     # gini = model.datacollector.get_model_vars_dataframe()
     # gini.plot()
