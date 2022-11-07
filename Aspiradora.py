@@ -64,11 +64,13 @@ class AspiradoraAgent(mesa.Agent):
     
 
 class AspiradoraModel(mesa.Model):
-    def __init__(self, width, height, num_agents, dirty_percentage):
+    def __init__(self, width, height, num_agents,
+                 dirty_percentage, max_steps):
         self.num_agents = num_agents
         self.width = width
         self.height = height
         self.dirty_percentage = dirty_percentage
+        self.remaining_steps = max_steps
         self.grid = mesa.space.MultiGrid(width, height, False)
         self.schedule = mesa.time.RandomActivation(self)
         self.running = True
@@ -96,8 +98,10 @@ class AspiradoraModel(mesa.Model):
         )
     
     def step(self):
-        self.datacollector.collect(self)
-        self.schedule.step()
+        if self.remaining_steps > 0:
+            self.datacollector.collect(self)
+            self.schedule.step()
+            self.remaining_steps -= 1
 
 
 if __name__ == '__main__':
