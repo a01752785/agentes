@@ -34,22 +34,6 @@ model_params = {
         1,
         description="Choose how many agents to include in the model",
     ),
-    "width": mesa.visualization.Slider(
-        "Width",
-        10,
-        1,
-        50,
-        1,
-        description="Choose the width of the grid",
-    ),
-    "height": mesa.visualization.Slider(
-        "Height",
-        10,
-        1,
-        50,
-        1,
-        description="Choose the height of the grid",
-    ),
     "dirty_percentage": mesa.visualization.Slider(
         "Dirty Percentage",
         0.2,
@@ -65,7 +49,9 @@ model_params = {
         1000,
         1,
         description="Choose the maximum number of steps"
-    )
+    ),
+    "width": int(input()),
+    "height": int(input()),
 }
 
 server = mesa.visualization.ModularServer(

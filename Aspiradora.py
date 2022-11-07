@@ -4,6 +4,7 @@
 
 import mesa
 
+
 def compute_clean_cells(model):
     # print(model.height)
     cells = model.height * model.width
@@ -21,11 +22,12 @@ def compute_clean_cells(model):
     # B = sum(xi * (N - i) for i, xi in enumerate(x)) / (N * sum(x))
     # return 1 + (1 / N) - 2 * B
 
+
 class DirtynessAgent(mesa.Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.dirty = True
-    
+
     def step(self):
         pass
 
@@ -61,7 +63,7 @@ class AspiradoraAgent(mesa.Agent):
             include_center=False)
         new_position = self.random.choice(possible_steps)
         self.model.grid.move_agent(self, new_position)
-    
+
 
 class AspiradoraModel(mesa.Model):
     def __init__(self, width, height, num_agents,
@@ -87,16 +89,15 @@ class AspiradoraModel(mesa.Model):
             self.grid.place_agent(agent, (x, y))
             used_coordinates.add((x, y))
 
-
         for i in range(self.num_agents):
             agent = AspiradoraAgent(i + num_dirty_cells, self)
             self.schedule.add(agent)
             self.grid.place_agent(agent, (1, 1))
-        
+
         self.datacollector = mesa.DataCollector(
             model_reporters={"CleanCells": compute_clean_cells}
         )
-    
+
     def step(self):
         if self.remaining_steps > 0:
             self.datacollector.collect(self)
@@ -115,7 +116,7 @@ if __name__ == '__main__':
     clean_cells.head()
     clean_cells.plot()
     plt.show()
-    
+
     # gini = model.datacollector.get_model_vars_dataframe()
     # gini.plot()
     # plt.show()
