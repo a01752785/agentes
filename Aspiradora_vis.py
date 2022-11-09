@@ -44,8 +44,16 @@ if __name__ == '__main__':
             0.2,
             0,
             1,
-            1,
+            0.01,
             description="Choose the percentage of dirty cells",
+        ),
+        "max_steps": mesa.visualization.Slider(
+            "Max Steps",
+            100,
+            10,
+            1000,
+            1,
+            description="Choose the maximum number of steps"
         ),
         "width": width,
         "height": height,

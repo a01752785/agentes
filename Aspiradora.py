@@ -99,7 +99,7 @@ class AspiradoraModel(mesa.Model):
         )
 
     def step(self):
-        if self.remaining_steps > 0:
+        if self.remaining_steps > 0 and compute_clean_cells(self) != 100.0:
             self.datacollector.collect(self)
             self.schedule.step()
             self.remaining_steps -= 1
@@ -108,7 +108,7 @@ class AspiradoraModel(mesa.Model):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     # Run the model
-    model = AspiradoraModel(30, 20, 1, 0.2)
+    model = AspiradoraModel(30, 20, 1, 0.2, 1000)
     for i in range(50):
         model.step()
 
