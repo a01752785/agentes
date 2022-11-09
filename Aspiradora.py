@@ -108,7 +108,7 @@ class AspiradoraModel(mesa.Model):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     # Run the model
-    model = AspiradoraModel(10, 10, 1, 0.2)
+    model = AspiradoraModel(30, 20, 1, 0.2)
     for i in range(50):
         model.step()
 
