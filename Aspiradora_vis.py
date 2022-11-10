@@ -20,14 +20,9 @@ def agent_portrayal(agent):
     return portrayal
 
 
-# chart = mesa.visualization.ChartModule(
-#     [{"Label": "Gini", "Color": "#0000FF"}], data_collector_name="datacollector"
-# )
-
-
 if __name__ == '__main__':
-    width: int = int(input("Ingresa el ancho:"))
-    height: int = int(input("Ingresa la altura:"))
+    width: int = int(input("Ingresa el ancho: "))
+    height: int = int(input("Ingresa la altura: "))
     grid = mesa.visualization.CanvasGrid(
         agent_portrayal, width, height, 500, 500)
     model_params = {
@@ -46,14 +41,6 @@ if __name__ == '__main__':
             1,
             0.01,
             description="Choose the percentage of dirty cells",
-        ),
-        "max_steps": mesa.visualization.Slider(
-            "Max Steps",
-            100,
-            10,
-            1000,
-            1,
-            description="Choose the maximum number of steps"
         ),
         "width": width,
         "height": height,
