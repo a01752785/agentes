@@ -23,6 +23,13 @@ def compute_clean_cells(model):
     # return 1 + (1 / N) - 2 * B
 
 
+def compute_agent_moves(model):
+    movements = 0
+    for agent in model.schedule.agents:
+        if isinstance(agent, AspiradoraAgent):
+            movements += agent.moves
+    return movements
+
 class DirtynessAgent(mesa.Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
@@ -41,6 +48,7 @@ class DirtynessAgent(mesa.Agent):
 class AspiradoraAgent(mesa.Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
+        self.moves = 0
 
     def step(self):
         cellmates = self.model.grid.get_cell_list_contents([self.pos])
@@ -63,6 +71,7 @@ class AspiradoraAgent(mesa.Agent):
             include_center=False)
         new_position = self.random.choice(possible_steps)
         self.model.grid.move_agent(self, new_position)
+        self.moves += 1
 
 
 class AspiradoraModel(mesa.Model):
@@ -95,7 +104,8 @@ class AspiradoraModel(mesa.Model):
             self.grid.place_agent(agent, (1, 1))
 
         self.datacollector = mesa.DataCollector(
-            model_reporters={"CleanCells": compute_clean_cells}
+            model_reporters={"CleanCells": compute_clean_cells,
+                             "TotalMovements": compute_agent_moves}
         )
 
     def step(self):
@@ -106,16 +116,63 @@ class AspiradoraModel(mesa.Model):
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-    # Run the model
-    model = AspiradoraModel(30, 20, 1, 0.2, 1000)
-    for i in range(50):
-        model.step()
+    width_param = int(input("Ingrese ancho:"))
+    height_param = int(input("Ingrese alto:"))
+    num_agents_param = int(input("Ingrese el numero de agentes:"))
+    dirty_percentage_param = \
+        float(input("Ingrese el porcentaje de casillas sucias (0 a 1):"))
+    max_steps_param = int(input("Ingrese el numero de pasos maximos:"))
+    iterations_param = int(input("Ingrese el numero de iteraciones:"))
+    params = {"width": width_param,
+              "height": height_param,
+              "num_agents": num_agents_param,
+              "dirty_percentage": dirty_percentage_param,
+              "max_steps": max_steps_param + 1}
 
-    clean_cells = model.datacollector.get_model_vars_dataframe()
-    clean_cells.head()
-    clean_cells.plot()
+    results = mesa.batch_run(
+        AspiradoraModel,
+        parameters=params,
+        iterations=iterations_param,
+        max_steps=max_steps_param,
+        number_processes=1,
+        data_collection_period=1,
+        display_progress=True,
+    )
+
+    import pandas as pd
+    results_df = pd.DataFrame(results)
+    clean_cells = []
+    total_movements = []
+    for i in range(iterations_param):
+        # Obtain the row containing the general outcome of the
+        # i-th run
+        run_info = results_df.query(f'RunId == {i}') \
+            .nlargest(1, 'TotalMovements')
+        print(run_info)
+        clean_cells.append(run_info.iloc[0]['CleanCells'])
+        total_movements.append(run_info.iloc[0]['TotalMovements'])
+    
+    import matplotlib.pyplot as plt
+    plt.hist(clean_cells, bins=20)
     plt.show()
+    plt.hist(total_movements, bins=20)
+    plt.show()
+    # print(clean_cells)
+    # print(results_df.to_string())
+    # print(results_df.keys())
+    # print(results_df['CleanCells'])
+    # print(results_df['TotalMovements'])
+    
+    # import matplotlib.pyplot as plt
+    # # Run the model
+    # model = AspiradoraModel(30, 20, 1, 0.2, 1000)
+    # for i in range(50):
+    #     model.step()
+
+    # clean_cells = model.datacollector.get_model_vars_dataframe()
+    # clean_cells.head()
+    # clean_cells.plot()
+    # plt.show()
 
     # gini = model.datacollector.get_model_vars_dataframe()
     # gini.plot()
